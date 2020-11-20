@@ -35,7 +35,8 @@ class Optimization2D():
 
         fig, ax = plt.subplots()
 
-        # ax.plot(self._path[:, 0], self._path[:, 1], color="red", label="c1={}, \n rho={}, \
+        # ax.plot(self._path[:, 0], self._path[:, 1],
+        #         color="red", label="c1={}, \n rho={}, \
         #     \n alpha0={}".format(self.armijo, self.rho, self.alpha0))
 
         ax.plot(self._path[:, 0], self._path[:, 1], color="red")
@@ -145,3 +146,44 @@ class NewtonsMethod(GradientDescent):
 
             self._calc_direction()
             self._update_solution()
+
+
+class quasiNewtonsMethod(NewtonsMethod):
+
+    def optimize(self):
+        self._path = np.array([self._initial_point])
+        while True:
+            norm = np.linalg.norm(self.partial_derivative(self._path[-1, 0],
+                                                          self._path[-1, 1]))
+
+            if norm <= self.tolerance:
+                print(self._path[-1])
+                break
+
+            self._calc_direction()
+            self._calc_alpha()
+            self._update_solution()
+            self._update_matrix
+
+    def _calc_direction(self):
+        self.d = np.linalg.solve(
+            self.PDM, -self.partial_derivative(self._path[-1, 0],
+                                               self._path[-1, 1]))
+
+    def _update_solution(self):
+        self._add_new_point(np.array(self._path[-1] + self.alpha*self.d))
+
+    def _update_matrix(self):
+        # DFP公式かBFGS公式を用いて行列を計算する
+        return
+
+    def PDM(self):
+        return np.array([[1, 0], [0, 1]])
+        # Positive Definite Matrix
+
+    def _s(self):
+        return self._path[-1] - self._path[-2]
+
+    def _y(self):
+        return self.partial_derivative(self._path[-1, 0], self._path[-1, 1])\
+            - self.partial_derivative(self._path[-2, 0], self._path[-2, 1])
