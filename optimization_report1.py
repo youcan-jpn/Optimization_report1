@@ -16,6 +16,10 @@ class Optimization2D():
     def set_tolerance(self, error):
         self.tolerance = error
 
+    def _calc_norm(self):
+        self._norm = np.linalg.norm(self.partial_derivative(self._path[-1, 0],
+                                                            self._path[-1, 1]))
+
     def _add_new_point(self, new_point):
         self._path = np.vstack((self._path, [new_point]))
 
@@ -69,10 +73,9 @@ class GradientDescent(Optimization2D):
     def optimize(self):
         self._path = np.array([self.initial_point])
         while True:
-            norm = np.linalg.norm(self.partial_derivative(self._path[-1, 0],
-                                                          self._path[-1, 1]))
+            self._calc_norm()
 
-            if norm <= self.tolerance:
+            if self._norm <= self.tolerance:
                 print(self._path[-1])
                 break
 
@@ -116,10 +119,9 @@ class NewtonsMethod(GradientDescent):
     def optimize(self):
         self._path = np.array([self.initial_point])
         while True:
-            norm = np.linalg.norm(self.partial_derivative(self._path[-1, 0],
-                                                          self._path[-1, 1]))
+            self._calc_norm()
 
-            if norm <= self.tolerance:
+            if self._norm <= self.tolerance:
                 print(self._path[-1])
                 break
 
@@ -133,10 +135,9 @@ class quasiNewtonsMethod(GradientDescent):
         self._B = np.array([[1, 0], [0, 1]])
         self._path = np.array([self.initial_point])
         while True:
-            norm = np.linalg.norm(self.partial_derivative(self._path[-1, 0],
-                                                          self._path[-1, 1]))
+            self._calc_norm()
 
-            if norm <= self.tolerance:
+            if self._norm <= self.tolerance:
                 print(self._path[-1])
                 break
 
@@ -165,3 +166,9 @@ class quasiNewtonsMethod(GradientDescent):
     def _y(self):
         return self.partial_derivative(self._path[-1, 0], self._path[-1, 1])\
             - self.partial_derivative(self._path[-2, 0], self._path[-2, 1])
+
+
+model = quasiNewtonsMethod()
+model.set_initial_point([1.2, 1.2])
+model.optimize()
+model.plot_convergence_graph()
