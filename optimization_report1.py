@@ -20,13 +20,6 @@ class Optimization2D():
     def set_tolerance(self, error):
         self.tolerance = error
 
-    # def set_objective_function(self, objective_function):
-    #     self.objective_function = objective_function
-
-    # def set_partial_derivative(self, partial1, partial2):
-    #     self.partial_derivative = partial1
-    #     self.partial_derivative = partial2
-
     def _add_new_point(self, new_point):
         self._path = np.vstack((self._path, [new_point]))
 
@@ -34,10 +27,6 @@ class Optimization2D():
                                save_fig=False, fig_name="img.png"):
 
         fig, ax = plt.subplots()
-
-        # ax.plot(self._path[:, 0], self._path[:, 1],
-        #         color="red", label="c1={}, \n rho={}, \
-        #     \n alpha0={}".format(self.armijo, self.rho, self.alpha0))
 
         ax.plot(self._path[:, 0], self._path[:, 1], color="red")
 
@@ -68,7 +57,7 @@ class Optimization2D():
 
         if save_fig:
             plt.savefig(fig_name)
-        # plt.legend(loc="lower left")
+
         plt.show()
 
 
