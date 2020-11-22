@@ -43,11 +43,6 @@ class Optimization2D():
             start2 = min2 - 0.1
             end2 = max2 + 0.1
 
-            # start1 = 0.5
-            # start2 = 0.5
-            # end1 = 1.5
-            # end2 = 1.5
-
             x = np.linspace(start1, end1, 1000)
             y = np.linspace(start2, end2, 1000)
 
