@@ -4,10 +4,6 @@ import matplotlib.pyplot as plt
 
 class Optimization2D():
 
-    def __init__(self):
-        self._path = []
-        self.tolerance = 0.0001
-
     def objective_function(self, a, b):
         return 100*(b - a**2)**2 + (1 - a)**2
 
@@ -15,13 +11,19 @@ class Optimization2D():
         return np.array([400*(a**3) - 400*a*b + 2*a - 2, 200*(b-a**2)])
 
     def set_initial_point(self, point):
-        self._initial_point = np.array(point)
+        self.initial_point = np.array(point)
 
     def set_tolerance(self, error):
         self.tolerance = error
 
     def _add_new_point(self, new_point):
         self._path = np.vstack((self._path, [new_point]))
+
+    def _update_solution(self):
+        self._add_new_point(np.array(self._path[-1] + self.alpha*self._d))
+
+    def steps(self):
+        return self._path.shape[0]
 
     def plot_convergence_graph(self, contour=True,
                                save_fig=False, fig_name="img.png"):
@@ -61,12 +63,11 @@ class GradientDescent(Optimization2D):
         self.armijo = 0.0001
         self.wolfe = 0.9
         self.rho = 0.8
-        self.alpha0 = 1
-        self.alpha = 0
+        self.alpha = 1
         self.tolerance = 0.00000001
 
     def optimize(self):
-        self._path = np.array([self._initial_point])
+        self._path = np.array([self.initial_point])
         while True:
             norm = np.linalg.norm(self.partial_derivative(self._path[-1, 0],
                                                           self._path[-1, 1]))
@@ -80,28 +81,22 @@ class GradientDescent(Optimization2D):
             self._update_solution()
 
     def _calc_direction(self):
-        self.d = -self.partial_derivative(self._path[-1, 0],
-                                          self._path[-1, 1])
+        self._d = -self.partial_derivative(self._path[-1, 0],
+                                           self._path[-1, 1])
 
     def _calc_alpha(self):
-        self.alpha = self.alpha0
+        self.alpha = 1
         while True:
             if self.ArmijoRule(self.alpha):
                 return
             self.alpha *= self.rho
 
     def ArmijoRule(self, a):
-        return (self.objective_function(self._path[-1, 0] + a*self.d[0],
-                                        self._path[-1, 1] + a*self.d[1])
+        return (self.objective_function(self._path[-1, 0] + a*self._d[0],
+                                        self._path[-1, 1] + a*self._d[1])
                 <= self.objective_function(self._path[-1, 0],
                                            self._path[-1, 1])
-                - self.armijo*a*np.inner(self.d, self.d))
-
-    def _update_solution(self):
-        self._add_new_point(np.array(self._path[-1] + self.alpha*self.d))
-
-    def steps(self):
-        return self._path.shape[0]
+                - self.armijo*a*np.inner(self._d, self._d))  # bool
 
 
 class NewtonsMethod(GradientDescent):
@@ -109,17 +104,17 @@ class NewtonsMethod(GradientDescent):
         return np.array([[1200*(a**2)-400*b+2, -400*a], [-400*a, 200]])
 
     def _calc_direction(self):
-        self.d = np.linalg.solve(
+        self._d = np.linalg.solve(
             self.Hessian(self._path[-1, 0],
                          self._path[-1, 1]),
             -self.partial_derivative(self._path[-1, 0],
                                      self._path[-1, 1]))
 
     def _update_solution(self):
-        self._add_new_point(np.array(self._path[-1] + self.d))
+        self._add_new_point(np.array(self._path[-1] + self._d))
 
     def optimize(self):
-        self._path = np.array([self._initial_point])
+        self._path = np.array([self.initial_point])
         while True:
             norm = np.linalg.norm(self.partial_derivative(self._path[-1, 0],
                                                           self._path[-1, 1]))
@@ -132,11 +127,11 @@ class NewtonsMethod(GradientDescent):
             self._update_solution()
 
 
-class quasiNewtonsMethod(NewtonsMethod):
+class quasiNewtonsMethod(GradientDescent):
 
     def optimize(self):
         self._B = np.array([[1, 0], [0, 1]])
-        self._path = np.array([self._initial_point])
+        self._path = np.array([self.initial_point])
         while True:
             norm = np.linalg.norm(self.partial_derivative(self._path[-1, 0],
                                                           self._path[-1, 1]))
@@ -151,12 +146,12 @@ class quasiNewtonsMethod(NewtonsMethod):
             self._update_matrix
 
     def _calc_direction(self):
-        self.d = np.linalg.solve(
+        self._d = np.linalg.solve(
             self._B, -self.partial_derivative(self._path[-1, 0],
                                               self._path[-1, 1]))
 
     def _update_solution(self):
-        self._add_new_point(np.array(self._path[-1] + self.alpha*self.d))
+        self._add_new_point(np.array(self._path[-1] + self.alpha*self._d))
 
     def _update_matrix(self):
         # BFGS
