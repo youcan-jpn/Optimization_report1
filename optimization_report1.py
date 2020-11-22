@@ -156,19 +156,24 @@ class quasiNewtonsMethod(GradientDescent):
 
     def _update_matrix(self):
         # BFGS
-        self._B = (self._B - np.dot(self._B * self._s, (self._B * self._s).T)
-                   / (np.inner(self._s, self._B * self._s))
-                   + (self._y * (self._y).T) / (self._s).T * self._y)
+        self._B = (self._B - np.dot(np.dot(self._B, self._s(), (np.dot(self._B, self._s())).T))
+                   / (np.inner(self._s(), np.dot(self._B, self._s())))
+                   + np.dot(self._y(), (self._y()).T) / np.inner((self._s()).T, self._y()))
 
     def _s(self):
-        return self._path[-1] - self._path[-2]
+        return (self._path[-1] - self._path[-2]).reshape(-1, 1)
 
     def _y(self):
-        return self.partial_derivative(self._path[-1, 0], self._path[-1, 1])\
-            - self.partial_derivative(self._path[-2, 0], self._path[-2, 1])
+        return (self.partial_derivative(self._path[-1, 0], self._path[-1, 1])
+                - self.partial_derivative(self._path[-2, 0], self._path[-2, 1])
+                ).reshape(-1, 1)
 
 
 model = quasiNewtonsMethod()
 model.set_initial_point([1.2, 1.2])
 model.optimize()
 model.plot_convergence_graph()
+print(model._y())
+print(model._B)
+print(np.dot(model._B, model._s()))
+print(np.dot(model._y(), (model._y()).T))
