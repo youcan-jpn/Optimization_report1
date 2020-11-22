@@ -151,6 +151,7 @@ class NewtonsMethod(GradientDescent):
 class quasiNewtonsMethod(NewtonsMethod):
 
     def optimize(self):
+        self._B = np.array([[1, 0], [0, 1]])
         self._path = np.array([self._initial_point])
         while True:
             norm = np.linalg.norm(self.partial_derivative(self._path[-1, 0],
@@ -167,19 +168,17 @@ class quasiNewtonsMethod(NewtonsMethod):
 
     def _calc_direction(self):
         self.d = np.linalg.solve(
-            self.PDM, -self.partial_derivative(self._path[-1, 0],
-                                               self._path[-1, 1]))
+            self._B, -self.partial_derivative(self._path[-1, 0],
+                                              self._path[-1, 1]))
 
     def _update_solution(self):
         self._add_new_point(np.array(self._path[-1] + self.alpha*self.d))
 
     def _update_matrix(self):
-        # DFP公式かBFGS公式を用いて行列を計算する
-        return
-
-    def PDM(self):
-        return np.array([[1, 0], [0, 1]])
-        # Positive Definite Matrix
+        # BFGS
+        self._B = (self._B - np.dot(self._B * self._s, (self._B * self._s).T)
+                   / (np.inner(self._s, self._B * self._s))
+                   + (self._y * (self._y).T) / (self._s).T * self._y)
 
     def _s(self):
         return self._path[-1] - self._path[-2]
