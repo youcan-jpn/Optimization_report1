@@ -144,7 +144,7 @@ class quasiNewtonsMethod(GradientDescent):
             self._calc_direction()
             self._calc_alpha()
             self._update_solution()
-            self._update_matrix
+            self._update_matrix()
 
     def _calc_direction(self):
         self._d = np.linalg.solve(
@@ -156,9 +156,13 @@ class quasiNewtonsMethod(GradientDescent):
 
     def _update_matrix(self):
         # BFGS
-        self._B = (self._B - np.dot(np.dot(self._B, self._s(), (np.dot(self._B, self._s())).T))
-                   / (np.inner(self._s(), np.dot(self._B, self._s())))
-                   + np.dot(self._y(), (self._y()).T) / np.inner((self._s()).T, self._y()))
+        self._B = (self._B
+                   - np.dot(np.dot(self._B, self._s()),
+                            (np.dot(self._B, self._s())).T)
+                   / (np.inner((self._s()).flatten(),
+                               (np.dot(self._B, self._s())).flatten()))
+                   + np.dot(self._y(), (self._y()).T)
+                   / np.inner((self._s()).flatten(), (self._y().flatten())))
 
     def _s(self):
         return (self._path[-1] - self._path[-2]).reshape(-1, 1)
@@ -170,10 +174,7 @@ class quasiNewtonsMethod(GradientDescent):
 
 
 model = quasiNewtonsMethod()
-model.set_initial_point([1.2, 1.2])
+model.set_initial_point([-1.2, 1])
 model.optimize()
+print(model.steps())
 model.plot_convergence_graph()
-print(model._y())
-print(model._B)
-print(np.dot(model._B, model._s()))
-print(np.dot(model._y(), (model._y()).T))
