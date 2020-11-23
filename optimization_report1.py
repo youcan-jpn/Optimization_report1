@@ -171,10 +171,3 @@ class quasiNewtonsMethod(GradientDescent):
         return (self.partial_derivative(self._path[-1, 0], self._path[-1, 1])
                 - self.partial_derivative(self._path[-2, 0], self._path[-2, 1])
                 ).reshape(-1, 1)
-
-
-model = quasiNewtonsMethod()
-model.set_initial_point([-1.2, 1])
-model.optimize()
-print(model.steps())
-model.plot_convergence_graph()
