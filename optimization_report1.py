@@ -65,7 +65,6 @@ class Optimization2D():
 class GradientDescent(Optimization2D):
     def __init__(self):
         self.armijo = 0.0001
-        self.wolfe = 0.9
         self.rho = 0.8
         self.alpha = 1
         self.tolerance = 0.00000001
@@ -103,6 +102,14 @@ class GradientDescent(Optimization2D):
 
 
 class NewtonsMethod(GradientDescent):
+    def __init__(self, max_iter=1000):
+        self.armijo = 0.0001
+        self.rho = 0.8
+        self.alpha = 1
+        self.tolerance = 0.00000001
+        self.max_iter = max_iter
+        self._iter = 0
+
     def Hessian(self, a, b):
         return np.array([[1200*(a**2)-400*b+2, -400*a], [-400*a, 200]])
 
@@ -119,22 +126,38 @@ class NewtonsMethod(GradientDescent):
     def optimize(self):
         self._path = np.array([self.initial_point])
         while True:
+            if self._iter >= 1000:
+                print('iteration stop')
+                return
+
             self._calc_norm()
 
             if self._norm <= self.tolerance:
                 print(self._path[-1])
-                break
+                return
 
             self._calc_direction()
             self._update_solution()
+            self._iter += 1
 
 
 class quasiNewtonsMethod(GradientDescent):
+    def __init__(self, max_iter=1000):
+        self.armijo = 0.0001
+        self.rho = 0.8
+        self.alpha = 1
+        self.tolerance = 0.00000001
+        self.max_iter = max_iter
+        self._iter = 0
 
     def optimize(self):
         self._B = np.array([[1, 0], [0, 1]])
         self._path = np.array([self.initial_point])
         while True:
+            if self._iter >= 1000:
+                print('iteration stop')
+                return
+
             self._calc_norm()
 
             if self._norm <= self.tolerance:
@@ -145,6 +168,7 @@ class quasiNewtonsMethod(GradientDescent):
             self._calc_alpha()
             self._update_solution()
             self._update_matrix()
+            self._iter += 1
 
     def _calc_direction(self):
         self._d = np.linalg.solve(
